@@ -67,7 +67,7 @@
       </form>
       <div class="music">
         <button id="play" class="alt">♪</button>
-        <span id="musicText">Çalıyor: Lennsko - frust.wav</span>
+        <span id="musicText">Giriş müziği çalıyor</span>
         <audio id="audio" loop></audio>
       </div>
     </div>
@@ -264,7 +264,7 @@
     boot().catch(()=>{});
   </script>
 
-  <!-- YOUTUBE MÜZİK PLAYER -->
+  <!-- SABİT YOUTUBE MÜZİK PLAYER (Sadece 1Bt2Tf5mt-Q çalar) -->
   <script>
     const youtubeTrack = '1Bt2Tf5mt-Q';
     let isPlaying = false;
@@ -281,7 +281,7 @@
         document.body.appendChild(frame);
       }
       frame.src = `https://www.youtube-nocookie.com/embed/${youtubeTrack}?autoplay=1&loop=1&playlist=${youtubeTrack}&controls=0&playsinline=1&rel=0`;
-      document.querySelector('#musicText').textContent = 'Lennsko - frust.wav çalıyor';
+      document.querySelector('#musicText').textContent = 'Müzik çalıyor';
       isPlaying = true;
     }
 
@@ -294,7 +294,7 @@
       isPlaying = false;
     }
 
-    // İlk etkileşimde veya düğmelere basıldığında müziği başlat
+    // Sayfada herhangi bir yere ilk tıklamada veya butona basıldığında otomatik başlar
     document.addEventListener('click', function initMusic() {
       if (!isPlaying) startYoutubeMusic();
       document.removeEventListener('click', initMusic);
