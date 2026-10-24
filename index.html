@@ -32,15 +32,18 @@
     .filters{display:flex;gap:8px}
     .filters select{width:auto}
     .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-    .card{padding:20px;border-radius:22px;cursor:pointer;transition:.2s}
+    .card{padding:20px;border-radius:22px;cursor:pointer;transition:.2s;display:flex;flex-direction:column;justify-content:space-between}
     .card:hover{transform:translateY(-4px)}
     .card h3{margin:17px 0 8px;letter-spacing:-.04em}
     .card p{font-size:13px;margin:0;min-height:42px}
-    .card footer{margin-top:20px;font:10px 'DM Mono';display:flex;justify-content:space-between;color:#bbb}
+    .card footer{margin-top:20px;font:10px 'DM Mono';display:flex;justify-content:space-between;align-items:center;color:#bbb}
+    .download-btn{background:transparent;border:1px solid #555;color:#fff;padding:6px 10px;border-radius:8px;font-size:11px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:4px;font-weight:600}
+    .download-btn:hover{background:#ffffff22;border-color:#888}
     .modal{display:none;position:fixed;inset:0;background:#000c;padding:18px;place-items:center}
     .modal.on{display:grid}
     .panel{width:min(1050px,100%);max-height:92vh;overflow:auto;padding:22px;border-radius:25px}
     .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}
+    .head-actions{display:flex;gap:10px;align-items:center}
     .head h2{margin:0}
     .panel iframe{width:100%;height:70vh;border:0;background:#fff;border-radius:14px}
     .admin{display:grid;grid-template-columns:340px 1fr;gap:14px}
@@ -100,7 +103,10 @@
     <div class="panel glass">
       <div class="head">
         <h2 id="vtitle">Sınav</h2>
-        <button class="close">×</button>
+        <div class="head-actions">
+          <a id="modalDownload" class="download-btn" href="#" target="_blank" download>📥 İndir</a>
+          <button class="close">×</button>
+        </div>
       </div>
       <iframe id="pdf"></iframe>
     </div>
@@ -177,7 +183,20 @@
 
     function render(){
       let q=$('#search').value.toLowerCase(),c=$('#cat').value,g=$('#grade').value,ls=exams.filter(x=>(x.title+x.description+x.category).toLowerCase().includes(q)&&(!c||x.category===c)&&(!g||x.grade===g));
-      $('#grid').innerHTML=ls.map(x=>`<article class="card glass" data-id="${x.id}"><div class="mono">${x.category} · ${x.grade}. SINIF</div><h3>${x.title}</h3><p>${x.description||'PDF sınavını açmak için görüntüle.'}</p><footer><span>PDF</span><span>GÖRÜNTÜLE →</span></footer></article>`).join('')||'<p class="muted">Sınav bulunamadı.</p>';
+      $('#grid').innerHTML=ls.map(x=>`
+        <article class="card glass" data-id="${x.id}">
+          <div>
+            <div class="mono">${x.category} · ${x.grade}. SINIF</div>
+            <h3>${x.title}</h3>
+            <p>${x.description||'PDF sınavını açmak için görüntüle.'}</p>
+          </div>
+          <footer>
+            <span>GÖRÜNTÜLE →</span>
+            <button class="download-btn" onclick="event.stopPropagation(); downloadPdf('${x.id}', '${x.title.replace(/'/g, "")}')">📥 İndir</button>
+          </footer>
+        </article>
+      `).join('')||'<p class="muted">Sınav bulunamadı.</p>';
+      
       document.querySelectorAll('.card').forEach(e=>e.onclick=()=>openPdf(e.dataset.id));
     }
 
@@ -185,8 +204,28 @@
       let x=exams.find(x=>x.id===id),d=await api('file-url',{id});
       $('#vtitle').textContent=x.title;
       $('#pdf').src=d.url;
+      $('#modalDownload').onclick = (e) => {
+        e.preventDefault();
+        downloadPdf(id, x.title);
+      };
       $('#viewer').classList.add('on');
     }
+
+    async function downloadPdf(id, title) {
+      try {
+        let d = await api('file-url', {id});
+        let a = document.createElement('a');
+        a.href = d.url;
+        a.download = (title || 'sinav') + '.pdf';
+        a.target = '_blank';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      } catch(err) {
+        alert('İndirilemedi: ' + err.message);
+      }
+    }
+    window.downloadPdf = downloadPdf;
 
     $('#login').onsubmit=async e=>{
       e.preventDefault();
@@ -264,7 +303,7 @@
     boot().catch(()=>{});
   </script>
 
-  <!-- SABİT YOUTUBE MÜZİK PLAYER (Sadece 1Bt2Tf5mt-Q çalar) -->
+  <!-- YOUTUBE MÜZİK PLAYER -->
   <script>
     const youtubeTrack = '1Bt2Tf5mt-Q';
     let isPlaying = false;
@@ -294,7 +333,6 @@
       isPlaying = false;
     }
 
-    // Sayfada herhangi bir yere ilk tıklamada veya butona basıldığında otomatik başlar
     document.addEventListener('click', function initMusic() {
       if (!isPlaying) startYoutubeMusic();
       document.removeEventListener('click', initMusic);
